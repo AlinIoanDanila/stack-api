@@ -1,21 +1,42 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const user = require("../models/user");
 
 const User = require("../models/user");
 
 //Get methods
 router.get("/", (req, res) => {
-  User.find()
-    .exec()
-    .then((result) => res.status(200).json(result))
-    .catch((err) => res.status(500).json({ error: err }));
+  if (req.query) {
+    User.find({ name: req.query.username })
+      .exec()
+      .then((result) => res.status(200).json(result))
+      .catch((err) => res.status(500).json({ error: err }));
+  } else {
+    User.find()
+      .exec()
+      .then((result) => res.status(200).json(result))
+      .catch((err) => res.status(500).json({ error: err }));
+  }
 });
 
 router.get("/:id", (req, res) => {
   const id = req.params.id;
   User.findById(id)
+    .exec()
+    .then((result) => {
+      console.log(result);
+      res.status(200).json({ result: result });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(401).json({ error: err });
+    });
+});
+
+router.get("/", (req, res) => {
+  const username = req.query.username;
+  console.log(username);
+  User.find({ name: username })
     .exec()
     .then((result) => {
       console.log(result);
@@ -52,21 +73,17 @@ router.post("/", (req, res) => {
 router.delete("/:id", (req, res) => {
   const id = req.params.id;
 
-  user
-    .remove({ _id: id })
+  User.remove({ _id: id })
     .exec()
     .then((result) => res.status(200).json(result))
     .catch((err) => res.status(500).json({ error: err }));
-
-  res.status(200).json({ message: "patch" });
 });
 
 //Update methods
 router.patch("/:id", (req, res) => {
   const id = req.params.id;
 
-  user
-    .updateOne({ _id: id }, { $set: req.body })
+  User.updateOne({ _id: id }, { $set: req.body })
     .exec()
     .then((result) => res.status(200).json({ result }))
     .catch((err) => res.status(500).json({ error: err }));
